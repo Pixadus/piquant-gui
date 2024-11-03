@@ -1,0 +1,21 @@
+/* Neptune stylesheet */
+
+
+button.right_button {
+    opacity: 0.25;
+    transition: 0.25s;
+    padding: 5px;
+}
+button.right_button:hover {
+    opacity: 0.75;
+    transition: 0.25s;
+}
+button.left_button {
+    opacity: 0.25;
+    transition: 0.25s;
+    padding: 5px; 
+}
+button.left_button:hover {
+    opacity: 0.75;
+    transition: 0.25s;
+}

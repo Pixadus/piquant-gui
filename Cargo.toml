@@ -1,0 +1,19 @@
+[package]
+name = "piquant-refresh"
+authors = ["Parker Lamb <parker@plamb.com>"]
+description = "Data visualization GUI to work with data from PIXL"
+homepage = "https://github.com/Pixadus/piquant-refresh"
+keywords = ["astronomy", "data", "analysis", "GUI", "application", "mars"]
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "4.4.11"
+eframe = "0.24.1"
+egui_extras = { version = "*", features = ["all_loaders"] }
+image = { version = "0.24.7", features = ["jpeg", "png"] }
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
+rfd = "0.12.1"
