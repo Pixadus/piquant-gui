@@ -6,36 +6,20 @@ use eframe::egui;
 
 use crate::functions::get_file;
 
-pub struct PiquantApp {
-    // Vector containing valid files in directory
-    images: Option<Vec<PathBuf>>,
-
-    // Current index of images
-    im_index: Option<usize>,
-}
+pub struct PiquantApp {}
 
 /// Set up the app with initial values
 impl PiquantApp {
-    /// Initial application setup
-    pub fn new(_cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>) -> Self {
-        // If some initial image, return some Vec.
-        match initial_image {
-            Some(i) => Self {
-                images: Some(vec![i]),
-                im_index: Some(0)
-            },
-            None => Self {
-                images: None,
-                im_index: None
-            }
-        }
+    // Initial application setup
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+        Self{}
     }
 }
 
 impl eframe::App for PiquantApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self {images, im_index } = self;
+        let Self {} = self;
 
         // Menu panel
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -68,6 +52,5 @@ impl eframe::App for PiquantApp {
                 });
             });
         });
-        println!("{:?}", images);
     }
 }

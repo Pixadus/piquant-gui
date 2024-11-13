@@ -8,10 +8,6 @@ pub fn get_args() -> ArgMatches {
             .version(env!("CARGO_PKG_VERSION"))
             .author(env!("CARGO_PKG_AUTHORS"))
             .about(env!("CARGO_PKG_DESCRIPTION"))
-            .arg(Arg::new("INPUT")
-                .help("Input image")
-                .required(false)
-                .index(1))
             .get_matches();
     matches
 }
