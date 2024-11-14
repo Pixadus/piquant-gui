@@ -1,56 +1,78 @@
 // Description: file used to set up and manage the program window. 
+// An excellent guide on some egui setup methods is available at https://egui.info/examples/
 
-use std::path::PathBuf;
-use rfd::FileDialog;
 use eframe::egui;
 
-use crate::functions::get_file;
+// Possible task options
+#[derive(Debug, PartialEq)]
+enum Tasks {
+    Energy_Calibration,
+    Plot_Spectrum,
+    Calculate_Primary_Spectrum,
+    Calculate_Full_Spectrum,
+    Compare_Measured_to_Calculated,
+    Optic_Response,
+    Calibrate,
+    Evaluate,
+    Fit_one_standard_with_plot,
+    Quantify,
+    Bulk_sum_and_max_value,
+    Map,
+    None
+}
 
-pub struct PiquantApp {}
+pub struct PiquantApp {
+    option_sel: Tasks
+}
 
 /// Set up the app with initial values
 impl PiquantApp {
     // Initial application setup
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        Self{}
+        // Provide initial values
+        Self{
+            option_sel: Tasks::None
+        }
     }
 }
 
 impl eframe::App for PiquantApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self {} = self;
+        let Self { 
+            option_sel 
+        } = self;
 
-        // Menu panel
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // This is where we store our menu bar
-            egui::menu::bar(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("Open").clicked() {
-                        // Open file dialogue
-                        let opened_file = FileDialog::new()
-                            .set_directory(match std::env::current_dir() {
-                                Ok(d) => d,
-                                Err(_e) => PathBuf::from("/")
-                            })
-                            .pick_file();
-                        match opened_file {
-                            Some(f) => {
-                                // Check extension - change FM to only look for these
-                                match get_file(f) {
-                                    Some(f) => {},
-                                    None => {}
-                                }
-                                // *images = Some(vec!(f))
-                            },
-                            None => {}
-                        }
-                    };
-                    if ui.button("Quit").clicked() {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                    };
-                });
+        // Create a central gui to 
+        egui::CentralPanel::default().show(ctx, |ui| {
+            egui::Grid::new("tasks_top_row")
+                .show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.radio_value(option_sel, Tasks::Energy_Calibration, "Energy Calibration");
+                        ui.radio_value(option_sel, Tasks::Plot_Spectrum, "Plot Spectrum");
+                        ui.radio_value(option_sel, Tasks::Calculate_Primary_Spectrum, "Calculate Primary Spectrum");
+                        ui.radio_value(option_sel, Tasks::Calculate_Full_Spectrum, "Calculate Full Spectrum");
+
+                    });
+                    ui.end_row();
+                
+                    ui.horizontal(|ui| {
+                        ui.radio_value(option_sel, Tasks::Compare_Measured_to_Calculated, "Compare Measured to Calculated");
+                        ui.radio_value(option_sel, Tasks::Optic_Response, "Optic Response");
+                        ui.radio_value(option_sel, Tasks::Calibrate, "Calibrate");
+                        ui.radio_value(option_sel, Tasks::Evaluate, "Evaluate");
+                    });
+                    ui.end_row();
+                
+                    ui.horizontal(|ui| {
+                        ui.radio_value(option_sel, Tasks::Fit_one_standard_with_plot, "Fit one standard with plot");
+                        ui.radio_value(option_sel, Tasks::Quantify, "Quantify");
+                        ui.radio_value(option_sel, Tasks::Bulk_sum_and_max_value, "Bulk sum and max value");
+                        ui.radio_value(option_sel, Tasks::Map, "Map");
+                    });
+                    ui.end_row();
             });
+
         });
     }
 }

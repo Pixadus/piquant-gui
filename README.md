@@ -16,7 +16,7 @@ cd piquant-refresh
 cargo build
 ```
 
-Or, to run the application,
+Or, to run the application as a debug variety,
 ```
 cargo run
 ```
