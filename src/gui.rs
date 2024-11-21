@@ -43,31 +43,44 @@ impl eframe::App for PiquantApp {
             option_sel 
         } = self;
 
-        // Create a central gui to 
+        // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
+
+            ui.vertical_centered(|ui| {
+                ui.heading("Task Selection");
+            });
+            // Grid to contain task list (see Tasks enum)
             egui::Grid::new("tasks_top_row")
                 .striped(true)
                 .spacing(egui::Vec2::new(25.0, 10.0))
                 .show(ui, |ui| {
-                ui.radio_value(option_sel, Tasks::Energy_Calibration, "Energy Calibration");
-                ui.radio_value(option_sel, Tasks::Plot_Spectrum, "Plot Spectrum");
-                ui.radio_value(option_sel, Tasks::Calculate_Primary_Spectrum, "Calculate Primary Spectrum");
-                ui.radio_value(option_sel, Tasks::Calculate_Full_Spectrum, "Calculate Full Spectrum");
-                ui.end_row();
-            
-                ui.radio_value(option_sel, Tasks::Compare_Measured_to_Calculated, "Compare Measured to Calculated");
-                ui.radio_value(option_sel, Tasks::Optic_Response, "Optic Response");
-                ui.radio_value(option_sel, Tasks::Calibrate, "Calibrate");
-                ui.radio_value(option_sel, Tasks::Evaluate, "Evaluate");
-                ui.end_row();
-            
-                ui.radio_value(option_sel, Tasks::Fit_one_standard_with_plot, "Fit one standard with plot");
-                ui.radio_value(option_sel, Tasks::Quantify, "Quantify");
-                ui.radio_value(option_sel, Tasks::Bulk_sum_and_max_value, "Bulk sum and max value");
-                ui.radio_value(option_sel, Tasks::Map, "Map");
-                ui.end_row();
-            });
+                    ui.radio_value(option_sel, Tasks::Energy_Calibration, "Energy Calibration");
+                    ui.radio_value(option_sel, Tasks::Plot_Spectrum, "Plot Spectrum");
+                    ui.radio_value(option_sel, Tasks::Calculate_Primary_Spectrum, "Calculate Primary Spectrum");
+                    ui.radio_value(option_sel, Tasks::Calculate_Full_Spectrum, "Calculate Full Spectrum");
+                    ui.end_row();
+                
+                    ui.radio_value(option_sel, Tasks::Compare_Measured_to_Calculated, "Compare Measured to Calculated");
+                    ui.radio_value(option_sel, Tasks::Optic_Response, "Optic Response");
+                    ui.radio_value(option_sel, Tasks::Calibrate, "Calibrate");
+                    ui.radio_value(option_sel, Tasks::Evaluate, "Evaluate");
+                    ui.end_row();
+                
+                    ui.radio_value(option_sel, Tasks::Fit_one_standard_with_plot, "Fit one standard with plot");
+                    ui.radio_value(option_sel, Tasks::Quantify, "Quantify");
+                    ui.radio_value(option_sel, Tasks::Bulk_sum_and_max_value, "Bulk sum and max value");
+                    ui.radio_value(option_sel, Tasks::Map, "Map");
+                    ui.end_row();
+                }
+            );
 
+            // Separator
+            ui.separator();
+
+            // Configuration section
+            ui.vertical_centered(|ui| {
+                ui.heading("Configuration");
+            });
         });
     }
 }
