@@ -2285,6 +2285,7 @@ dependencies = [
  "log",
  "pretty_env_logger",
  "rfd",
+ "winapi",
 ]
 
 [[package]]
