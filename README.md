@@ -2,6 +2,8 @@
 
 This repository will serve as the home of a refresh of the GUI designed to work with [piquant](https://github.com/pixlise/piquant), a program designed to perform quantitative x-ray fluorescence analysis on data from the Mars PIXL instrument. 
 
+**Note**: `lib/cli` includes the command line interface Python application. More on this can be found at [pixlise/piquant](https://github.com/pixlise/piquant).
+
 ## Compiling
 
 ### Linux & MacOSX
@@ -37,4 +39,14 @@ Once these are installed, navigate to the repository folder in Windows Terminal,
 cargo run
 ```
 
-to build + run the application. 
+to build & run the application. 
+
+## Compiling the CLI application
+
+Navigate to `lib/cli`, then copy your relevant platform file to `Makefile`. For example, on Mac OSX,
+
+```
+cp PIQUANT.mak.mac Makefile
+```
+
+Then `make`. There will be some errors due to missing unit testing files -- ignore these for now. The resulting executable will be in `bin/`. 
