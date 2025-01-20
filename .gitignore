@@ -3,3 +3,4 @@ target/
 **/.DS_Store*
 .vscode
 lib/cli/Release
+lib/cli/Makefile
