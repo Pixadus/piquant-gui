@@ -1,8 +1,6 @@
 // Description: file used to set up and manage the program window. 
 // An excellent guide on some egui setup methods is available at https://egui.info/examples/
 
-use std::path::PathBuf;
-
 use eframe::egui;
 use crate::functions;
 
