@@ -1,8 +1,8 @@
-# piquant-refresh
+# piquant-gui
 
 This repository will serve as the home of a refresh of the GUI designed to work with [piquant](https://github.com/pixlise/piquant), a program designed to perform quantitative x-ray fluorescence analysis on data from the Mars PIXL instrument. 
 
-**Note**: `lib/cli` includes the command line interface Python application. More on this can be found at [pixlise/piquant](https://github.com/pixlise/piquant).
+Please note that this is just a *GUI frontend* to the PIQUANT CLI application, available in `lib/cli`. 
 
 ## Compiling
 
@@ -13,15 +13,12 @@ Make sure you have the Rust toolchain installed; see [https://rustup.rs/](https:
 Once both of the above have been installed, use the following instructions to compile:
 
 ```
-git clone https://github.com/Pixadus/piquant-refresh
-cd piquant-refresh
-cargo build
-```
-
-Or, to run the application as a debug variety,
-```
+git clone https://github.com/Pixadus/piquant-gui
+cd piquant-gui
 cargo run
 ```
+
+To compile for release, append the release flag: `cargo build --release`. 
 
 ## Windows
 
@@ -39,7 +36,7 @@ Once these are installed, navigate to the repository folder in Windows Terminal,
 cargo run
 ```
 
-to build & run the application. 
+to build & run the application. To compile for release append the release flag: `cargo run --release`. 
 
 ## Compiling the CLI application
 
@@ -50,3 +47,5 @@ cp PIQUANT.mak.mac Makefile
 ```
 
 Then `make`. There will be some errors due to missing unit testing files -- ignore these for now. The resulting executable will be in `bin/`. 
+
+Compiled platform-specific CLI applications will be available on the [repository releases page](https://github.com/Pixadus/piquant-gui/releases). 

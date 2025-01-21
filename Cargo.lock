@@ -2407,7 +2407,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "piquant-refresh"
+name = "piquant-gui"
 version = "0.1.0"
 dependencies = [
  "clap",

@@ -1,8 +1,8 @@
 [package]
-name = "piquant-refresh"
+name = "piquant-gui"
 authors = ["Parker Lamb <parker@plamb.com>"]
 description = "Data visualization GUI to work with data from PIXL"
-homepage = "https://github.com/Pixadus/piquant-refresh"
+homepage = "https://github.com/Pixadus/piquant-gui"
 keywords = ["astronomy", "data", "analysis", "GUI", "application", "mars"]
 version = "0.1.0"
 edition = "2021"
