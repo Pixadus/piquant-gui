@@ -1,12 +1,13 @@
 // Description: file used to set up and manage the program window. 
 // An excellent guide on some egui setup methods is available at https://egui.info/examples/
 
+use log::info;
 use eframe::egui;
 use crate::functions;
 
 // Possible task options
 #[derive(Debug, PartialEq)]
-enum Tasks {
+pub enum Tasks {
     EnergyCalibration,
     PlotSpectrum,
     CalculatePrimarySpectrum,
@@ -33,7 +34,9 @@ pub struct PiquantApp {
     log_file: String,
     element_controls: String,
     cli_args: String,
-    output_text: String
+    output_text: String,
+    enable_vec: Vec<bool>,
+    args: Vec<String>
 }
 
 /// Set up the app with initial values
@@ -52,11 +55,16 @@ impl PiquantApp {
             log_file: String::new(),
             element_controls: String::new(),
             cli_args: String::new(),
-            output_text: String::new()
+            output_text: String::new(),
+            enable_vec: vec![false, false, false, false, false, false, false, false],
+            args: Vec::new()
         }
+
+        // Regarding enable vec:
+        // [0,           1,          2,         3,             4,        5,                6,         7]
+        // [config_file, calib_file, stds_file, spectrum_file, map_file, element_controls, plot_file, execute_button]
     }
 }
-
 impl eframe::App for PiquantApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -72,7 +80,12 @@ impl eframe::App for PiquantApp {
             element_controls,
             cli_args,
             output_text,
+            enable_vec,
+            args
         } = self;
+
+        // Update enables to match selected tasks
+        functions::handle_task_selection(task_sel, enable_vec);
 
         // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -84,7 +97,7 @@ impl eframe::App for PiquantApp {
             egui::Grid::new("task_selection")
                 .striped(true)
                 .spacing([25.0, 10.0])
-                .show(ui, |ui| {
+                .show(ui, |ui: &mut egui::Ui| {
                     ui.radio_value(task_sel, Tasks::EnergyCalibration, "Energy Calibration");
                     ui.radio_value(task_sel, Tasks::PlotSpectrum, "Plot Spectrum");
                     ui.radio_value(task_sel, Tasks::CalculatePrimarySpectrum, "Calculate Primary Spectrum");
@@ -119,12 +132,13 @@ impl eframe::App for PiquantApp {
                     ui.add_space(125.0); // Add some initial margin 
                     ui.add(egui::Label::new("Configuration file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(config_file).hint_text("path to config file"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[0], egui::TextEdit::singleline(config_file).hint_text("path to config file"));
+                        if ui.add_enabled(enable_vec[0], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
                                 *config_file =  path.into_os_string().into_string().unwrap();
+                                info!("File dialog opened for config file");
                             }
                         };
                     });
@@ -132,10 +146,10 @@ impl eframe::App for PiquantApp {
 
                     // Calibration file
                     ui.add_space(125.0);
-                    ui.add(egui::Label::new("Calibration file"));
+                    ui.add( egui::Label::new("Calibration file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(calib_file).hint_text("path to calibration file"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[1], egui::TextEdit::singleline(calib_file).hint_text("path to calibration file"));
+                        if ui.add_enabled(enable_vec[1], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
@@ -149,8 +163,8 @@ impl eframe::App for PiquantApp {
                     ui.add_space(125.0);
                     ui.add(egui::Label::new("Standards input file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(standards_file).hint_text("path to standards input file"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[2], egui::TextEdit::singleline(standards_file).hint_text("path to standards input file"));
+                        if ui.add_enabled(enable_vec[2], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
@@ -164,8 +178,8 @@ impl eframe::App for PiquantApp {
                     ui.add_space(125.0);
                     ui.add(egui::Label::new("Spectrum file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(spectrum_file).hint_text("path to spectrum file"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[3], egui::TextEdit::singleline(spectrum_file).hint_text("path to spectrum file"));
+                        if ui.add_enabled(enable_vec[3], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
@@ -179,8 +193,8 @@ impl eframe::App for PiquantApp {
                     ui.add_space(125.0);
                     ui.add(egui::Label::new("Map file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(map_file).hint_text("path to map file (optional?)"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[4], egui::TextEdit::singleline(map_file).hint_text("path to map file (optional?)"));
+                        if ui.add_enabled(enable_vec[4], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
@@ -193,7 +207,7 @@ impl eframe::App for PiquantApp {
                     // Element fit controls
                     ui.add_space(125.0);
                     ui.add(egui::Label::new("Element fit controls"));
-                    ui.add(egui::TextEdit::singleline(element_controls).hint_text("FE_[KLMN] [IFX]").desired_width(340.0));
+                    ui.add_enabled(enable_vec[5], egui::TextEdit::singleline(element_controls).hint_text("FE_[KLMN] [IFX]").desired_width(340.0));
                     ui.end_row();
                 }
             );
@@ -211,8 +225,8 @@ impl eframe::App for PiquantApp {
                     ui.add_space(125.0);
                     ui.add(egui::Label::new("Plot file"));
                     ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(plot_file).hint_text("path to plot file (optional)"));
-                        if ui.button("Browse").clicked() {
+                        ui.add_enabled(enable_vec[6], egui::TextEdit::singleline(plot_file).hint_text("path to plot file (optional)"));
+                        if ui.add_enabled(enable_vec[6], egui::Button::new("Browse")).clicked() {
                             // Open file dialog to look for relevant config files
                             let f = functions::open_fd();
                             if let Some(path) = f {
@@ -257,7 +271,7 @@ impl eframe::App for PiquantApp {
 
             // "Execute" button
             ui.vertical_centered(|ui| {
-                ui.add(egui::Button::new("Execute").min_size(egui::Vec2::new(775.0, 20.0)));
+                ui.add_enabled(enable_vec[7], egui::Button::new("Execute").min_size(egui::Vec2::new(775.0, 20.0)));
             });
         });
     }

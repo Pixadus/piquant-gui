@@ -2,7 +2,7 @@
 
 This repository will serve as the home of a refresh of the GUI designed to work with [piquant](https://github.com/pixlise/piquant), a program designed to perform quantitative x-ray fluorescence analysis on data from the Mars PIXL instrument. 
 
-Please note that this is just a *GUI frontend* to the PIQUANT CLI application, available in `lib/cli`. 
+**Note**: this frontend is designed to work in conjunction with the PIQUANT CLI application available in `lib/cli`. 
 
 ## Compiling
 

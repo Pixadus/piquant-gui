@@ -11,3 +11,8 @@ pub fn get_args() -> ArgMatches {
             .get_matches();
     matches
 }
+
+// .arg(Arg::new("INPUT") // add below .about
+// .help("Input image")
+// .required(false)
+// .index(1))
