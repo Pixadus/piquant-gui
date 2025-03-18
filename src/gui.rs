@@ -3,6 +3,7 @@
 
 use log::info;
 use eframe::egui;
+use egui::Color32;
 use crate::functions;
 
 // Possible task options
@@ -36,6 +37,7 @@ pub struct PiquantApp {
     cli_args: String,
     output_text: String,
     enable_vec: Vec<bool>,
+    color_vec: Vec<Color32>,
     args: Vec<String>
 }
 
@@ -43,6 +45,9 @@ pub struct PiquantApp {
 impl PiquantApp {
     // Initial application setup
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+        // Get default style - may be dark or light depending on user theme
+        let default_bg = egui::Style::default().visuals.extreme_bg_color;
+
         // Provide initial values
         Self{
             task_sel: Tasks::None,
@@ -57,12 +62,16 @@ impl PiquantApp {
             cli_args: String::new(),
             output_text: String::new(),
             enable_vec: vec![false, false, false, false, false, false, false, false],
+            color_vec: vec![default_bg, default_bg, default_bg, default_bg, default_bg, default_bg, default_bg],
             args: Vec::new()
         }
-
         // Regarding enable vec:
         // [0,           1,          2,         3,             4,        5,                6,         7]
         // [config_file, calib_file, stds_file, spectrum_file, map_file, element_controls, plot_file, execute_button]
+
+        // Color vec:
+        // [0,           1,          2,         3,             4,        5,         6]
+        // [config_file, calib_file, stds_file, spectrum_file, map_file, plot_file, log_file]
     }
 }
 impl eframe::App for PiquantApp {
@@ -81,23 +90,34 @@ impl eframe::App for PiquantApp {
             cli_args,
             output_text,
             enable_vec,
+            color_vec,
             args
         } = self;
 
+        // Update text_vec to values of each file field
+        let text_vec: Vec<String> = vec![config_file.clone(), calib_file.clone(), standards_file.clone(), spectrum_file.clone(), map_file.clone(), plot_file.clone()];
+
         // Update enables to match selected tasks
-        functions::handle_task_selection(task_sel, enable_vec);
+        functions::handle_task_selection(task_sel, enable_vec, args);
+
+        // Check each path for validity. Ask Tim re: colors. 
+        functions::set_valid_path_colors(text_vec.clone(), color_vec);
+
+        // Update args vec based on current selection and parameters
+        functions::update_args(task_sel, args, enable_vec, text_vec);
 
         // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
 
             // Task selection section
             ui.heading("Task selection");
+            ui.add_space(10.0);
 
             // Grid to contain task list (see Tasks enum)
             egui::Grid::new("task_selection")
                 .striped(true)
                 .spacing([25.0, 10.0])
-                .show(ui, |ui: &mut egui::Ui| {
+                .show(ui, |ui| {
                     ui.radio_value(task_sel, Tasks::EnergyCalibration, "Energy Calibration");
                     ui.radio_value(task_sel, Tasks::PlotSpectrum, "Plot Spectrum");
                     ui.radio_value(task_sel, Tasks::CalculatePrimarySpectrum, "Calculate Primary Spectrum");
@@ -117,162 +137,186 @@ impl eframe::App for PiquantApp {
                     ui.end_row();
                 }
             );
+            info!("Created grid");
 
             // Separator
+            ui.add_space(5.0);
             ui.separator();
+            ui.add_space(5.0);
 
             // Configuration section
             ui.heading("Configuration");
+            ui.add_space(10.0);
+            
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.add_space(125.0);
+                egui::Grid::new("configuration")
+                    .spacing([50.0, 12.5])
+                    .num_columns(2)
+                    .show(ui, |ui| {
+                        // Config file
+                        ui.add(egui::Label::new("Configuration file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[0], egui::TextEdit::singleline(config_file)
+                                .hint_text("path to configuration file")
+                                .background_color(color_vec[0]));
+                            if ui.add_enabled(enable_vec[0], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *config_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
 
-            egui::Grid::new("configuration")
-                .spacing([50.0, 12.5])
-                .num_columns(2)
-                .show(ui, |ui| {
-                    // Config file
-                    ui.add_space(125.0); // Add some initial margin 
-                    ui.add(egui::Label::new("Configuration file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[0], egui::TextEdit::singleline(config_file).hint_text("path to config file"));
-                        if ui.add_enabled(enable_vec[0], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *config_file =  path.into_os_string().into_string().unwrap();
-                                info!("File dialog opened for config file");
-                            }
-                        };
-                    });
-                    ui.end_row();
+                        // Calibration file
+                        ui.add( egui::Label::new("Calibration file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[1], egui::TextEdit::singleline(calib_file)
+                                .hint_text("path to calibration file")
+                                .background_color(color_vec[1]));
+                            if ui.add_enabled(enable_vec[1], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *calib_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
 
-                    // Calibration file
-                    ui.add_space(125.0);
-                    ui.add( egui::Label::new("Calibration file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[1], egui::TextEdit::singleline(calib_file).hint_text("path to calibration file"));
-                        if ui.add_enabled(enable_vec[1], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *calib_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
+                        // Standards file
+                        ui.add(egui::Label::new("Standards input file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[2], egui::TextEdit::singleline(standards_file)
+                                .hint_text("path to standards input file")
+                                .background_color(color_vec[2]));
+                            if ui.add_enabled(enable_vec[2], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *standards_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
 
-                    // Standards file
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Standards input file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[2], egui::TextEdit::singleline(standards_file).hint_text("path to standards input file"));
-                        if ui.add_enabled(enable_vec[2], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *standards_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
+                        // Spectrum file
+                        ui.add(egui::Label::new("Spectrum file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[3], egui::TextEdit::singleline(spectrum_file)
+                                .hint_text("path to spectrum file")
+                                .background_color(color_vec[3]));
+                            if ui.add_enabled(enable_vec[3], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *spectrum_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
 
-                    // Spectrum file
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Spectrum file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[3], egui::TextEdit::singleline(spectrum_file).hint_text("path to spectrum file"));
-                        if ui.add_enabled(enable_vec[3], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *spectrum_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
+                        // Map file
+                        ui.add(egui::Label::new("Map file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[4], egui::TextEdit::singleline(map_file)
+                                .hint_text("path to map file (optional?)")
+                                .background_color(color_vec[4]));
+                            if ui.add_enabled(enable_vec[4], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *map_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
 
-                    // Map file
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Map file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[4], egui::TextEdit::singleline(map_file).hint_text("path to map file (optional?)"));
-                        if ui.add_enabled(enable_vec[4], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *map_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
+                        // Element fit controls
+                        ui.add(egui::Label::new("Element fit controls"));
+                        ui.add_enabled(enable_vec[5], egui::TextEdit::singleline(element_controls).hint_text("FE_[KLMN] [IFX]").desired_width(340.0));
+                        ui.end_row();
+                    }
+                );
+            });
 
-                    // Element fit controls
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Element fit controls"));
-                    ui.add_enabled(enable_vec[5], egui::TextEdit::singleline(element_controls).hint_text("FE_[KLMN] [IFX]").desired_width(340.0));
-                    ui.end_row();
-                }
-            );
+
 
             // Separator
+            ui.add_space(5.0);
             ui.separator();
+            ui.add_space(5.0);
 
             // Optional arguments section
             ui.heading("Optional arguments");
-            egui::Grid::new("optional_arguments")
-                .spacing([50.0, 15.0])
-                .num_columns(2)
-                .show(ui, |ui| {
-                    // Plot file
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Plot file"));
-                    ui.horizontal(|ui| {
-                        ui.add_enabled(enable_vec[6], egui::TextEdit::singleline(plot_file).hint_text("path to plot file (optional)"));
-                        if ui.add_enabled(enable_vec[6], egui::Button::new("Browse")).clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *plot_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
-                    
-                    // Log file
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("Log file (appends)"));
-                    ui.horizontal(|ui| {
-                        ui.add(egui::TextEdit::singleline(log_file).hint_text("path to log file (optional)"));
-                        if ui.button("Browse").clicked() {
-                            // Open file dialog to look for relevant config files
-                            let f = functions::open_fd();
-                            if let Some(path) = f {
-                                *log_file =  path.into_os_string().into_string().unwrap();
-                            }
-                        };
-                    });
-                    ui.end_row();
+            ui.add_space(10.0);
 
-                    // Extra CLI arguments
-                    ui.add_space(125.0);
-                    ui.add(egui::Label::new("CLI arguments"));
-                    ui.add(egui::TextEdit::singleline(cli_args).hint_text("additional CLI arguments").desired_width(340.0));
-                    ui.end_row();
-                }
-            );
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.add_space(125.0);
+
+                egui::Grid::new("optional_arguments")
+                    .spacing([50.0, 15.0])
+                    .num_columns(2)
+                    .show(ui, |ui| {
+                        // Plot file
+                        ui.add(egui::Label::new("Plot file"));
+                        ui.horizontal(|ui| {
+                            ui.add_enabled(enable_vec[6], egui::TextEdit::singleline(plot_file)
+                                .hint_text("path to plot file (optional)")
+                                .background_color(color_vec[5]));
+                            if ui.add_enabled(enable_vec[6], egui::Button::new("Browse")).clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *plot_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
+                        
+                        // Log file
+                        ui.add(egui::Label::new("Log file (appends)"));
+                        ui.horizontal(|ui| {
+                            ui.add(egui::TextEdit::singleline(log_file)
+                                .hint_text("path to log file (optional)")
+                                .background_color(color_vec[6]));
+                            if ui.button("Browse").clicked() {
+                                // Open file dialog to look for relevant config files
+                                let f = functions::open_fd();
+                                if let Some(path) = f {
+                                    *log_file =  path.into_os_string().into_string().unwrap();
+                                }
+                            };
+                        });
+                        ui.end_row();
+
+                        // Extra CLI arguments
+                        ui.add(egui::Label::new("CLI arguments"));
+                        ui.add(egui::TextEdit::singleline(cli_args).hint_text("additional CLI arguments").desired_width(340.0));
+                        ui.end_row();
+                    }
+                );
+            });
 
             // Separator
+            ui.add_space(5.0);
             ui.separator();
+            ui.add_space(5.0);
 
             // Results section
             ui.add_enabled(false,
                 egui::TextEdit::multiline(output_text)
                     .hint_text("output").desired_width(f32::INFINITY)
                     .desired_rows(8)
-                );
+            );
 
             // "Execute" button
             ui.vertical_centered(|ui| {
                 ui.add_enabled(enable_vec[7], egui::Button::new("Execute").min_size(egui::Vec2::new(775.0, 20.0)));
             });
+
         });
     }
 }

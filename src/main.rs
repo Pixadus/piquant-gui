@@ -15,14 +15,17 @@ fn main() -> eframe::Result<()> {
 
     // 2. Set up GUI options
     let app_title = concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION"));
-    let native_options = eframe::NativeOptions::default();
+    let native_options = eframe::NativeOptions {
+        viewport: eframe::egui::ViewportBuilder::default()
+            .with_min_inner_size(eframe::egui::vec2(0.0, 660.0))
+            .with_resizable(false),
+            ..Default::default()
+    };
 
     // 3. Start up app
     eframe::run_native(
         app_title,
         native_options,
-        Box::new(move |cc| Box::new(
-            gui::PiquantApp::new(cc)
-        ))
+        Box::new(move |cc| Ok(Box::new(gui::PiquantApp::new(cc))))
     )
 }
