@@ -38,6 +38,7 @@ pub struct PiquantApp {
     output_text: String,
     enable_vec: Vec<bool>,
     color_vec: Vec<Color32>,
+    valid_vec: Vec<bool>,
     args: Vec<String>
 }
 
@@ -62,7 +63,8 @@ impl PiquantApp {
             cli_args: String::new(),
             output_text: String::new(),
             enable_vec: vec![false, false, false, false, false, false, false, false],
-            color_vec: vec![default_bg, default_bg, default_bg, default_bg, default_bg, default_bg, default_bg],
+            color_vec: vec![default_bg, default_bg, default_bg, default_bg, default_bg, default_bg, default_bg, default_bg, default_bg],
+            valid_vec: vec![false, false, false, false, false, false, false, false, false],
             args: Vec::new()
         }
         // Regarding enable vec:
@@ -72,6 +74,11 @@ impl PiquantApp {
         // Color vec:
         // [0,           1,          2,         3,             4,        5,         6]
         // [config_file, calib_file, stds_file, spectrum_file, map_file, plot_file, log_file]
+
+        // Text vec:
+        // [0,           1,          2,         3,             4,        5,         6,        7,                8]
+        // [config_file, calib_file, stds_file, spectrum_file, map_file, plot_file, log_file, element_controls, cli_args]
+        // plot_file & log_file are optional (5, 6), ditto cli_args
     }
 }
 impl eframe::App for PiquantApp {
@@ -91,20 +98,24 @@ impl eframe::App for PiquantApp {
             output_text,
             enable_vec,
             color_vec,
+            valid_vec,
             args
         } = self;
 
         // Update text_vec to values of each file field
-        let text_vec: Vec<String> = vec![config_file.clone(), calib_file.clone(), standards_file.clone(), spectrum_file.clone(), map_file.clone(), plot_file.clone()];
+        let text_vec: Vec<String> = vec![config_file.clone(), calib_file.clone(), standards_file.clone(), spectrum_file.clone(), map_file.clone(), plot_file.clone(), log_file.clone(), element_controls.clone(), cli_args.clone()];
 
         // Update enables to match selected tasks
         functions::handle_task_selection(task_sel, enable_vec, args);
 
         // Check each path for validity. Ask Tim re: colors. 
-        functions::set_valid_path_colors(text_vec.clone(), color_vec);
+        functions::set_valid_path_colors(text_vec.clone(), color_vec, valid_vec);
 
         // Update args vec based on current selection and parameters
-        functions::update_args(task_sel, args, enable_vec, text_vec);
+        functions::update_args(task_sel, args, text_vec);
+
+        // Check if execute button is ready to go
+        functions::check_ready_to_execute(valid_vec, task_sel, enable_vec);
 
         // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
