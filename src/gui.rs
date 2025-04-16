@@ -320,12 +320,21 @@ impl eframe::App for PiquantApp {
             ui.separator();
             ui.add_space(5.0);
 
-            // Results section
-            ui.add_enabled(false,
-                egui::TextEdit::multiline(output_text)
-                    .hint_text("output").desired_width(f32::INFINITY)
-                    .desired_rows(8)
-            );
+            // Results multi-line textbox section
+            egui::ScrollArea::vertical()
+                .auto_shrink(true)
+                .show(ui, |ui| {
+                    ui.with_layout(
+                        egui::Layout::top_down(egui::Align::LEFT).with_cross_justify(true),
+                        |ui| {
+                            ui.add_enabled(false,
+                                egui::TextEdit::multiline(output_text)
+                                    .hint_text("output").desired_width(f32::INFINITY)
+                                    .desired_rows(8)
+                            );
+                        },
+                    );
+                });
 
             // "Execute" button
             ui.vertical_centered(|ui| {
@@ -364,10 +373,12 @@ impl eframe::App for PiquantApp {
                     };
                     
                     // Write to output. 
-                    output_text.push_str(format!("Executable path: {}\n", [piquant_exe_dir.as_str(), piquant_exe].concat()).as_str());
+                    // output_text.push_str(format!("Executable path: {}\n", [piquant_exe_dir.as_str(), piquant_exe].concat()).as_str());
                     output_text.push_str(format!("Arguments: {:?}\n", args).as_str());
-                    output_text.push_str("--------------------------- Starting execution -------------------------------");
-                    println!("{:?}", String::from_utf8_lossy(&output.stdout));
+                    // output_text.push_str("--------------------------- Starting execution -------------------------------\n");
+                    let stdout =  String::from_utf8(output.stdout).unwrap();
+                    // output_text();
+                    output_text.push_str(&stdout);
                 };
             });
 
