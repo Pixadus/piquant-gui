@@ -115,6 +115,10 @@ fn check_valid(valid_vec: &mut Vec<bool>, indices: Vec<usize>) -> bool {
             all_valid = false;
         }
     }
+    // Handle no button selected
+    if indices.len() == 0 {
+        all_valid = false;
+    }
     return all_valid;
 }
 
@@ -140,5 +144,6 @@ pub fn check_ready_to_execute(valid_vec: &mut Vec<bool>, sel_task: &mut gui::Tas
         gui::Tasks::None => {}
     }
 
+    // Enable the execute button if relevant fields are valid
     enable_vec[7] = check_valid(valid_vec, indices);
 }

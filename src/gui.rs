@@ -2,8 +2,10 @@
 // An excellent guide on some egui setup methods is available at https://egui.info/examples/
 
 use log::info;
-use eframe::egui;
+use eframe::egui::{self, TextBuffer};
 use egui::Color32;
+use std::env;
+use std::process::Command;
 use crate::functions;
 
 // Possible task options
@@ -102,6 +104,8 @@ impl eframe::App for PiquantApp {
             args
         } = self;
 
+        // -------- Functions to run per app update
+
         // Update text_vec to values of each file field
         let text_vec: Vec<String> = vec![config_file.clone(), calib_file.clone(), standards_file.clone(), spectrum_file.clone(), map_file.clone(), plot_file.clone(), log_file.clone(), element_controls.clone(), cli_args.clone()];
 
@@ -116,6 +120,8 @@ impl eframe::App for PiquantApp {
 
         // Check if execute button is ready to go
         functions::check_ready_to_execute(valid_vec, task_sel, enable_vec);
+
+        // ---------- UI building section 
 
         // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -253,8 +259,6 @@ impl eframe::App for PiquantApp {
                 );
             });
 
-
-
             // Separator
             ui.add_space(5.0);
             ui.separator();
@@ -325,7 +329,46 @@ impl eframe::App for PiquantApp {
 
             // "Execute" button
             ui.vertical_centered(|ui| {
-                ui.add_enabled(enable_vec[7], egui::Button::new("Execute").min_size(egui::Vec2::new(775.0, 20.0)));
+                if ui.add_enabled(enable_vec[7], egui::Button::new("Execute").min_size(egui::Vec2::new(775.0, 20.0))).clicked() {
+                    // Get CWD of Rust piquant executable, assuming the path is accessible.
+                    let cwe = env::current_exe().unwrap();
+                    let cwd = cwe.parent().unwrap();
+
+                    // Relative to the executable path, the PIQUANT CLI exe should be (unless otherwise specified) in ../../lib/cli/bin/
+                    let piquant_exe_dir = format!("{}/../../lib/cli/bin/", cwd.to_str().unwrap());
+                    let piquant_exe;
+
+                    // Clear output text
+                    output_text.clear();
+
+                    // Send arguments to PIQUANT and execute based on platform.
+                    let output = if cfg!(target_os = "windows") {
+                        piquant_exe = "PIQUANT.exe";
+                        Command::new([piquant_exe_dir.as_str(), piquant_exe].concat())
+                            .args(args.clone())
+                            .output()
+                            .expect("failed to execute process")
+                    } else if cfg!(target_os = "macos") {
+                        piquant_exe = "PIQUANT";
+                        Command::new([piquant_exe_dir.as_str(), piquant_exe].concat())
+                            .args(args.clone())
+                            .output()
+                            .expect("failed to execute process")
+                    } else {
+                        piquant_exe = "PIQUANT";
+                        // (Likely) on *nix
+                        Command::new([piquant_exe_dir.as_str(), piquant_exe].concat())
+                            .args(args.clone())
+                            .output()
+                            .expect("failed to execute process")
+                    };
+                    
+                    // Write to output. 
+                    output_text.push_str(format!("Executable path: {}\n", [piquant_exe_dir.as_str(), piquant_exe].concat()).as_str());
+                    output_text.push_str(format!("Arguments: {:?}\n", args).as_str());
+                    output_text.push_str("--------------------------- Starting execution -------------------------------");
+                    println!("{:?}", String::from_utf8_lossy(&output.stdout));
+                };
             });
 
         });
