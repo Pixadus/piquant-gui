@@ -323,6 +323,7 @@ impl eframe::App for PiquantApp {
             // Results multi-line textbox section
             egui::ScrollArea::vertical()
                 .auto_shrink(true)
+                .max_height(130.0)
                 .show(ui, |ui| {
                     ui.with_layout(
                         egui::Layout::top_down(egui::Align::LEFT).with_cross_justify(true),

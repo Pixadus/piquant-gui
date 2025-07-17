@@ -17,7 +17,7 @@ fn main() -> eframe::Result<()> {
     let app_title = concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION"));
     let native_options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
-            .with_min_inner_size(eframe::egui::vec2(0.0, 660.0))
+            .with_min_inner_size(eframe::egui::vec2(800.0, 660.0))
             .with_resizable(false),
             ..Default::default()
     };
