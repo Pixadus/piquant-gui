@@ -2,7 +2,7 @@
 // An excellent guide on some egui setup methods is available at https://egui.info/examples/
 
 use log::info;
-use eframe::egui::{self, TextBuffer};
+use eframe::egui::{self, TextBuffer, Visuals};
 use egui::Color32;
 use std::env;
 use std::process::Command;
@@ -125,6 +125,9 @@ impl eframe::App for PiquantApp {
 
         // Create a central panel to hold our widgets in the window
         egui::CentralPanel::default().show(ctx, |ui| {
+
+            // Use dark theme by default
+            ui.style_mut().visuals = Visuals::dark();
 
             // Task selection section
             ui.heading("Task selection");
